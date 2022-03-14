@@ -66,6 +66,37 @@ async function run() {
       const orles = await cursor.toArray();
       res.json(orles);
     });
+
+    // users data post to mongodb
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      console.log('user result', result);
+      res.json(result);
+    })
+
+    // make admin 
+    app.put('/users/admin', async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const filter = { email: user.email };
+      const updateUser = { $set: { role: 'admin' } };
+      const result = await usersCollection.updateOne(filter, updateUser);
+      res.json(result);
+    })
+
+    // check admin
+    app.get('/users/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === 'admin') {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    })
+
   } finally {
     // await client.close();
   }
@@ -79,3 +110,6 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`listening at ${port}`);
 });
+
+
+// server link: https://hungry-kitchen-app.herokuapp.com/
