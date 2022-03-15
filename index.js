@@ -5,7 +5,7 @@ const fileUpload = require("express-fileupload");
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const ObjectId = require("mongodb").ObjectId;
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(fileUpload());
@@ -29,6 +29,12 @@ async function run() {
     const usersCollection = database.collection("users");
 
     //Foods Collectios--------------------
+    app.post('/foods', async(req, res)=>{
+      const foods = req.body;
+      const saveFood = await foodsCollection.insertOne(foods)
+      console.log(foods);
+      res.json(saveFood);
+    })
     app.get("/foods", async (req, res) => {
       const cursor = foodsCollection.find({});
       const foods = await cursor.toArray();
@@ -40,6 +46,15 @@ async function run() {
       const result = await foodsCollection.findOne(query);
       res.json(result);
     });
+
+    app.delete("/foods/:id", async (req, res)=>{
+      const id = req.params.id;
+      const filter = {_id:ObjectId(id)};
+      const foods = await foodsCollection.deleteOne(filter);
+      console.log(foods)
+      res.send(foods)
+    })
+
     app.get("/category", async (req, res) => {
       const category = req.query.category;
       const query = { category: category };
@@ -78,7 +93,6 @@ async function run() {
     // make admin 
     app.put('/users/admin', async (req, res) => {
       const user = req.body;
-      console.log(user);
       const filter = { email: user.email };
       const updateUser = { $set: { role: 'admin' } };
       const result = await usersCollection.updateOne(filter, updateUser);
