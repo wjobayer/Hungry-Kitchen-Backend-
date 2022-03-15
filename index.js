@@ -29,12 +29,12 @@ async function run() {
     const usersCollection = database.collection("users");
 
     //Foods Collectios--------------------
-    app.post('/foods', async(req, res)=>{
+    app.post("/foods", async (req, res) => {
       const foods = req.body;
-      const saveFood = await foodsCollection.insertOne(foods)
+      const saveFood = await foodsCollection.insertOne(foods);
       console.log(foods);
       res.json(saveFood);
-    })
+    });
     app.get("/foods", async (req, res) => {
       const cursor = foodsCollection.find({});
       const foods = await cursor.toArray();
@@ -47,13 +47,13 @@ async function run() {
       res.json(result);
     });
 
-    app.delete("/foods/:id", async (req, res)=>{
+    app.delete("/foods/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id:ObjectId(id)};
+      const filter = { _id: ObjectId(id) };
       const foods = await foodsCollection.deleteOne(filter);
-      console.log(foods)
-      res.send(foods)
-    })
+      console.log(foods);
+      res.send(foods);
+    });
 
     app.get("/category", async (req, res) => {
       const category = req.query.category;
@@ -83,34 +83,33 @@ async function run() {
     });
 
     // users data post to mongodb
-    app.post('/users', async (req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
-      console.log('user result', result);
+      console.log("user result", result);
       res.json(result);
-    })
+    });
 
-    // make admin 
-    app.put('/users/admin', async (req, res) => {
+    // make admin
+    app.put("/users/admin", async (req, res) => {
       const user = req.body;
       const filter = { email: user.email };
-      const updateUser = { $set: { role: 'admin' } };
+      const updateUser = { $set: { role: "admin" } };
       const result = await usersCollection.updateOne(filter, updateUser);
       res.json(result);
-    })
+    });
 
     // check admin
-    app.get('/users/:email', async (req, res) => {
+    app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       let isAdmin = false;
-      if (user?.role === 'admin') {
+      if (user?.role === "admin") {
         isAdmin = true;
       }
       res.json({ admin: isAdmin });
-    })
-
+    });
   } finally {
     // await client.close();
   }
@@ -124,6 +123,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`listening at ${port}`);
 });
-
 
 // server link: https://hungry-kitchen-app.herokuapp.com/
