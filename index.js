@@ -5,14 +5,21 @@ const fileUpload = require("express-fileupload");
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const ObjectId = require("mongodb").ObjectId;
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(fileUpload());
 app.use(express.json());
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.7xx1x.mongodb.net/hungry-kitchen?retryWrites=true&w=majority`;
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.7xx1x.mongodb.net/hungry-kitchen?retryWrites=true&w=majority`;
 
+// const client = new MongoClient(uri, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
+
+const uri =
+  "mongodb+srv://altdevs:3BbY4ReRgpByogL6@cluster0.7xx1x.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -29,6 +36,12 @@ async function run() {
     const usersCollection = database.collection("users");
 
     //Foods Collectios--------------------
+    app.post("/foods", async (req, res) => {
+      const foods = req.body;
+      const saveFood = await foodsCollection.insertOne(foods);
+      console.log(foods);
+      res.json(saveFood);
+    });
     app.get("/foods", async (req, res) => {
       const cursor = foodsCollection.find({});
       const foods = await cursor.toArray();
@@ -40,6 +53,15 @@ async function run() {
       const result = await foodsCollection.findOne(query);
       res.json(result);
     });
+
+    app.delete("/foods/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const foods = await foodsCollection.deleteOne(filter);
+      console.log(foods);
+      res.send(foods);
+    });
+
     app.get("/category", async (req, res) => {
       const category = req.query.category;
       const query = { category: category };
@@ -52,6 +74,11 @@ async function run() {
       const cursor = ordersCollection.find({});
       const orders = await cursor.toArray();
       res.send(orders);
+    });
+    app.post("/orders", async (req, res) => {
+      const orders = req.body;
+      const result = await ordersCollection.insertMany(orders);
+      res.json(result);
     });
     // users collections ---------
     app.get("/users", async (req, res) => {
@@ -66,6 +93,35 @@ async function run() {
       const orles = await cursor.toArray();
       res.json(orles);
     });
+
+    // users data post to mongodb
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      console.log("user result", result);
+      res.json(result);
+    });
+
+    // make admin
+    app.put("/users/admin", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email };
+      const updateUser = { $set: { role: "admin" } };
+      const result = await usersCollection.updateOne(filter, updateUser);
+      res.json(result);
+    });
+
+    // check admin
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === "admin") {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    });
   } finally {
     // await client.close();
   }
@@ -79,3 +135,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`listening at ${port}`);
 });
+
+// server link: https://hungry-kitchen-app.herokuapp.com/
