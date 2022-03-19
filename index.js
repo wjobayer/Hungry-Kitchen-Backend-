@@ -29,12 +29,13 @@ async function run() {
     const usersCollection = database.collection("users");
 
     //Foods Collectios--------------------
-    app.post('/foods', async(req, res)=>{
+    app.post("/foods", async (req, res) => {
       const foods = req.body;
-      const saveFood = await foodsCollection.insertOne(foods)
+      const saveFood = await foodsCollection.insertOne(foods);
       console.log(foods);
       res.json(saveFood);
-    })
+    });
+
     app.get("/foods", async (req, res) => {
       const cursor = foodsCollection.find({});
       const foods = await cursor.toArray();
@@ -47,13 +48,39 @@ async function run() {
       res.json(result);
     });
 
-    app.delete("/foods/:id", async (req, res)=>{
+    app.delete("/foods/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id:ObjectId(id)};
+      const filter = { _id: ObjectId(id) };
       const foods = await foodsCollection.deleteOne(filter);
-      console.log(foods)
-      res.send(foods)
-    })
+      console.log(foods);
+      res.send(foods);
+    });
+    app.put("/foods/:id", async (req, res) => {
+      const id = req.params.id;
+      const {
+        foodName,
+        type,
+        category,
+        foodDescription,
+        price,
+        foodImage,
+        resturantName,
+      } = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateFood = {
+        $set: {
+          foodName,
+          type,
+          category,
+          foodDescription,
+          price,
+          foodImage,
+          resturantName,
+        },
+      };
+      const result = await foodsCollection.updateOne(filter, updateFood);
+      res.json(result);
+    });
 
     app.get("/category", async (req, res) => {
       const category = req.query.category;
@@ -62,11 +89,28 @@ async function run() {
       const categories = await cursor.toArray();
       res.json(categories);
     });
+
     // Orders collections ---------
     app.get("/orders", async (req, res) => {
       const cursor = ordersCollection.find({});
       const orders = await cursor.toArray();
       res.send(orders);
+    });
+
+    app.delete("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const deleteOrder = await ordersCollection.deleteOne(filter);
+      res.json(deleteOrder);
+    });
+
+    // order update api
+    app.put("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: id };
+      const updateOrder = { $set: { orderStatus: req.body.orderStatus } };
+      const result = await ordersCollection.updateOne(filter, updateOrder);
+      res.json(result);
     });
     // users collections ---------
     app.get("/users", async (req, res) => {
@@ -83,34 +127,33 @@ async function run() {
     });
 
     // users data post to mongodb
-    app.post('/users', async (req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
-      console.log('user result', result);
+      console.log("user result", result);
       res.json(result);
-    })
+    });
 
-    // make admin 
-    app.put('/users/admin', async (req, res) => {
+    // make admin
+    app.put("/users/admin", async (req, res) => {
       const user = req.body;
       const filter = { email: user.email };
-      const updateUser = { $set: { role: 'admin' } };
+      const updateUser = { $set: { role: "admin" } };
       const result = await usersCollection.updateOne(filter, updateUser);
       res.json(result);
-    })
+    });
 
     // check admin
-    app.get('/users/:email', async (req, res) => {
+    app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       let isAdmin = false;
-      if (user?.role === 'admin') {
+      if (user?.role === "admin") {
         isAdmin = true;
       }
       res.json({ admin: isAdmin });
-    })
-
+    });
   } finally {
     // await client.close();
   }
@@ -124,6 +167,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`listening at ${port}`);
 });
-
 
 // server link: https://hungry-kitchen-app.herokuapp.com/
