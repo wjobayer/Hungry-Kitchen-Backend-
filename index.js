@@ -54,6 +54,32 @@ async function run() {
       console.log(foods);
       res.send(foods);
     });
+    app.put("/foods/:id", async (req, res) => {
+      const id = req.params.id;
+      const {
+        foodName,
+        type,
+        category,
+        foodDescription,
+        price,
+        foodImage,
+        resturantName,
+      } = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updateFood = {
+        $set: {
+          foodName,
+          type,
+          category,
+          foodDescription,
+          price,
+          foodImage,
+          resturantName,
+        },
+      };
+      const result = await foodsCollection.updateOne(filter, updateFood);
+      res.json(result);
+    });
 
     app.get("/category", async (req, res) => {
       const category = req.query.category;
@@ -75,11 +101,28 @@ async function run() {
       const orders = await cursor.toArray();
       res.send(orders);
     });
-    app.post("/orders", async (req, res) => {
-      const orders = req.body;
-      const result = await ordersCollection.insertMany(orders);
+
+    app.delete("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const deleteOrder = await ordersCollection.deleteOne(filter);
+      res.json(deleteOrder);
+    });
+
+    // order update api
+    app.put("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: id };
+      const updateOrder = {
+        $set: {
+          orderStatus: req.body.orderStatus,
+          riderStatus: req.body.riderStatus,
+        },
+      };
+      const result = await ordersCollection.updateOne(filter, updateOrder);
       res.json(result);
     });
+
     // users collections ---------
     app.get("/users", async (req, res) => {
       const cursor = usersCollection.find({});
