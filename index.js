@@ -11,15 +11,8 @@ app.use(cors());
 app.use(fileUpload());
 app.use(express.json());
 
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.7xx1x.mongodb.net/hungry-kitchen?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.7xx1x.mongodb.net/hungry-kitchen?retryWrites=true&w=majority`;
 
-// const client = new MongoClient(uri, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-
-const uri =
-  "mongodb+srv://altdevs:3BbY4ReRgpByogL6@cluster0.7xx1x.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -68,6 +61,13 @@ async function run() {
       const cursor = foodsCollection.find(query);
       const categories = await cursor.toArray();
       res.json(categories);
+    });
+    app.get("/mealTime", async (req, res) => {
+      const mealTime = req.query.mealTime;
+      const query = { mealTime: mealTime };
+      const cursor = foodsCollection.find(query);
+      const getMealTime = await cursor.toArray();
+      res.json(getMealTime);
     });
     // Orders collections ---------
     app.get("/orders", async (req, res) => {
@@ -120,7 +120,7 @@ async function run() {
       if (user?.role === "admin") {
         isAdmin = true;
       }
-      res.json({ admin: isAdmin });
+      res.json(user);
     });
   } finally {
     // await client.close();
