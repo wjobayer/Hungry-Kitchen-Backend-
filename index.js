@@ -114,10 +114,16 @@ async function run() {
     app.put("/orders/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: id };
-      const updateOrder = { $set: { orderStatus: req.body.orderStatus } };
+      const updateOrder = {
+        $set: {
+          orderStatus: req.body.orderStatus,
+          riderStatus: req.body.riderStatus,
+        },
+      };
       const result = await ordersCollection.updateOne(filter, updateOrder);
       res.json(result);
     });
+
     // users collections ---------
     app.get("/users", async (req, res) => {
       const cursor = usersCollection.find({});
