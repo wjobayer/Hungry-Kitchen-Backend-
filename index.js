@@ -159,7 +159,12 @@ async function run() {
       res.json({ clientSecret: paymentIntent.client_secret })
   })
 
-  
+  //resturants operations
+  app.get("/resturants", async (req, res) => {
+    const cursor = resturantCollection.find({});
+    const orders = await cursor.toArray();
+    res.send(orders);
+  });
 
   } finally {
     // await client.close();
