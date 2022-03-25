@@ -35,6 +35,7 @@ async function run() {
     const foodsCollection = database.collection("foods");
     const ordersCollection = database.collection("orders");
     const usersCollection = database.collection("users");
+    const resturantCollection = database.collection("resturants");
 
     //Foods Collectios--------------------
     app.post("/foods", async (req, res) => {
@@ -94,18 +95,40 @@ async function run() {
       res.json(result);
     });
 
-    app.put('/orders/:id', async (req, res) => {
+    app.delete("/orders/:id", async (req, res) => {
       const id = req.params.id;
-      const payment = req.body;
       const filter = { _id: ObjectId(id) };
-      const updateDoc = {
+      const deleteOrder = await ordersCollection.deleteOne(filter);
+      res.json(deleteOrder);
+    });
+
+      // order update api
+      app.put("/orders/:id", async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: ObjectId(id) };
+        const updateOrder = {
           $set: {
-              payment: payment
-          }
-      };
-      const result = await ordersCollection.updateOne(filter, updateDoc);
-      res.json(result);
-  })
+            orderStatus: req.body.orderStatus,
+            riderStatus: req.body.riderStatus,
+          },
+        };
+  
+        const result = await ordersCollection.updateOne(filter, updateOrder);
+        res.json(result);
+      });
+
+  //   app.put('/orders/:id', async (req, res) => {
+  //     const id = req.params.id;
+  //     const payment = req.body;
+  //     const filter = { _id: ObjectId(id) };
+  //     const updateDoc = {
+  //         $set: {
+  //             payment: payment
+  //         }
+  //     };
+  //     const result = await ordersCollection.updateOne(filter, updateDoc);
+  //     res.json(result);
+  // })
     // users collections ---------
     app.get("/users", async (req, res) => {
       const cursor = usersCollection.find({});
